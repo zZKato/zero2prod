@@ -2,7 +2,7 @@
 name = "zero2prod"
 version = "0.1.0"
 authors = ["zZKato <michelevig@protonmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 path = "src/lib.rs"
@@ -12,10 +12,12 @@ path = "src/main.rs"
 name = "zero2prod"
 
 [dependencies]
-actix-web = "4.0.0-beta.3"
-actix-rt = "2.0.2"
-reqwest = "0.11.0"
-serde = {version = "1", features = ["derive"]}
+actix-web = "4"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+uuid = { version = "0.8.1", features = ["v4"] }
+chrono = "0.4.15"
+config = { version = "0.12", default-features = false, features = ["yaml"] }
 
 [dependencies.sqlx]
 version = "0.5.1"
@@ -26,8 +28,9 @@ features = [
   "postgres",
   "uuid",
   "chrono",
-  "migrate"
+  "migrate",
 ]
 
 [dev-dependencies]
 tokio = "1.2.0"
+reqwest = { version = "0.11.0", features = ["json"] }
