@@ -1,15 +1,42 @@
-# Base image version
-FROM rust:1.59-alpine3.15
+#-------------------------------- Chef stage --------------------------------
+FROM lukemathwalker/cargo-chef:latest-rust-1.59.0 as chef
 
 # Switch working directory and install dependencies
 WORKDIR /app
-RUN apk --no-cache add lld clang musl-dev
+RUN apt update && apt install lld clang -y
 
+FROM chef as planner
 # Copy code from repository to the docker container
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+#-------------------------------- Builder stage --------------------------------
+FROM chef as builder
+COPY --from=planner /app/recipe.json recipe.json
+# Build project dependencies
+RUN cargo chef cook --release --recipe-path recipe.json
+
 COPY . .
 # Compile with release flag
 ENV SQLX_OFFLINE true
-RUN cargo build --release
+RUN cargo build --release --bin zero2prod
+
+#-------------------------------- Runner stage --------------------------------
+FROM debian:bullseye-slim AS runtime
+# Switch working directory
+WORKDIR /app
+
+# Install OpenSSL and ca-certificates needed for HTTPS + remove unneeded files
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy binary + config
+COPY --from=builder /app/target/release/zero2prod zero2prod
+COPY configuration configuration
+ENV APP_ENVIRONMENT production
 
 # Startup app
-ENTRYPOINT ["./target/release/zero2prod"]
+ENTRYPOINT ["./zero2prod"]
