@@ -16,7 +16,7 @@ actix-web = "4"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 uuid = { version = "0.8.2", features = ["v4"] }
-chrono = { version = "0.4.19", features = ["std", "clock"] }
+chrono = { version = "0.4.19", default-features = false, features = ["clock"] }
 config = { version = "0.12", default-features = false, features = ["yaml"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
